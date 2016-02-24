@@ -1,0 +1,60 @@
+<?php
+
+/**
+ * @file
+ * Module file for Site API key module
+ */
+
+/**
+ * Implements hook_help().
+ */
+function site_api_key_help($path, $arg) {
+  switch ($path) {
+    case "admin/help#site_api_key":
+      return '<p>' . t("Provides functionality to add API key and provide json object to service call against configured API Key") . '</p>';
+      break;
+  }
+}
+/**
+ * Implements hook_menu().
+ */
+function site_api_key_menu() {
+  $items['page_json/%/%node'] = array(
+    'title' => 'Page Json',
+    'page callback' => 'site_api_key_page_json',
+    'page arguments' => array(1, 2),
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+    'file' => 'site_api_key.inc',
+  );
+  return $items;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function site_api_key_form_system_site_information_settings_alter(&$form, &$form_state, $form_id) {
+  $form['site_api_setting'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Site API Key setting'),
+  );
+  $api_key = variable_get('siteapikey');
+  $form['site_api_setting']['siteapikey'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Site API Key'),
+    '#default_value' => $api_key ? $api_key : "",
+    '#attributes' =>array('placeholder' => empty($api_key) ? t('No API Key yet') : t('New key'))
+  );
+  $form['actions']['submit']['#value'] = t('Update Configuration');
+  $form['#submit'][] = "site_api_key_form_system_site_information_settings_submit";
+}
+
+/**
+ * additional submit handler to add drupal message to site_information_settings form
+ */
+function site_api_key_form_system_site_information_settings_submit(&$form, &$form_state) {
+  $api_key = $form_state['values']['siteapikey'];
+  if ($api_key) {
+    drupal_set_message(t("Site API Key has been saved with " . $api_key));
+  }
+}
